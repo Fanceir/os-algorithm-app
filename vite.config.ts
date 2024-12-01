@@ -5,6 +5,12 @@ import { resolve } from "path";
 export default defineConfig({
   base: "/",
   plugins: [react()],
+  build: {
+    outDir: "dist",
+    rollupOptions: {
+      input: "index.html",
+    },
+  },
   resolve: {
     alias: {
       "@": resolve(__dirname, "src"),
