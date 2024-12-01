@@ -8,7 +8,7 @@ const data = {
       items: [
         {
           title: "关于",
-          href: "/about",
+          url: "/about",
         },
         {
           title: "作者的博客",
@@ -22,23 +22,23 @@ const data = {
       items: [
         {
           title: "进程调度算法",
-          href: "/process-scheduling",
+          url: "/process-scheduling",
         },
         {
           title: "作业调度算法",
-          href: "/job-scheduling",
+          url: "/job-scheduling",
         },
         {
           title: "存储管理算法",
-          href: "/memory-management",
+          url: "/memory-management",
         },
         {
           title: "文件管理算法",
-          href: "/file-management",
+          url: "/file-management",
         },
         {
           title: "银行家死锁避免算法",
-          href: "/bankers-algorithm",
+          url: "/bankers-algorithm",
         },
       ],
     },

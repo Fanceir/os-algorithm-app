@@ -5,7 +5,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/Sidebar";
 const App: React.FC = () => {
   return (
-    <Router>
+    <Router basename="/">
       <SidebarProvider className="flex min-h-screen">
         <AppSidebar className="flex-shrink-0" /> {/* 固定宽度的侧边栏 */}
         <SidebarTrigger>Toggle Sidebar</SidebarTrigger>
@@ -16,5 +16,4 @@ const App: React.FC = () => {
     </Router>
   );
 };
-
 export default App;
