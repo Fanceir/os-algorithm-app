@@ -1,25 +1,22 @@
 import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 interface Process {
-  id: number; //进程的id
-  arrivalTime: number; //进程的到达时间
-  burstTime: number; //进程执行完成所需要的时间
-  priority: number; // 优先数
+  id: number; // 进程的ID
+  arrivalTime: number; // 进程的到达时间
+  burstTime: number; // 进程执行完成所需要的时间
+  remainingTime: number; // 剩余执行时间
   endTime?: number; // 完成时间
-  remainingTime?: number; // 线程执行完成还需要多少时间
 }
 
-import { Button } from "@/components/ui/button";
-import { TopBar } from "../TopBar";
-
-const PriorityScheduling: React.FC = () => {
+const RoundRobinScheduler: React.FC = () => {
   // 初始进程数组
   const [processes, setProcesses] = useState<Process[]>([
-    { id: 1, arrivalTime: 0, burstTime: 4, priority: 3 },
-    { id: 2, arrivalTime: 1, burstTime: 3, priority: 2 },
-    { id: 3, arrivalTime: 2, burstTime: 2, priority: 4 },
-    { id: 4, arrivalTime: 3, burstTime: 1, priority: 1 },
-    { id: 5, arrivalTime: 4, burstTime: 5, priority: 5 },
+    { id: 1, arrivalTime: 0, burstTime: 4, remainingTime: 4 },
+    { id: 2, arrivalTime: 0, burstTime: 3, remainingTime: 3 },
+    { id: 3, arrivalTime: 0, burstTime: 2, remainingTime: 2 },
+    { id: 4, arrivalTime: 0, burstTime: 1, remainingTime: 1 },
+    { id: 5, arrivalTime: 0, burstTime: 5, remainingTime: 5 },
   ]);
 
   const [schedule, setSchedule] = useState<Process[]>([]); // 存储调度顺序
@@ -29,6 +26,7 @@ const PriorityScheduling: React.FC = () => {
     ...processes,
   ]); // 剩余进程
   const [completedProcesses, setCompletedProcesses] = useState<Process[]>([]); // 已完成进程
+  const [timeQuantum, setTimeQuantum] = useState(2); // 设置时间片（可调整）
   const [isReady, setIsReady] = useState(false); // 标记是否已更新进程信息
   const [isCompleted, setIsCompleted] = useState(false); // 标记是否所有进程已完成
 
@@ -39,7 +37,14 @@ const PriorityScheduling: React.FC = () => {
     value: number
   ) => {
     const updatedProcesses = processes.map((process) =>
-      process.id === id ? { ...process, [field]: value } : process
+      process.id === id
+        ? {
+            ...process,
+            [field]: value,
+            remainingTime:
+              field === "burstTime" ? value : process.remainingTime,
+          }
+        : process
     );
     setProcesses(updatedProcesses);
   };
@@ -52,40 +57,46 @@ const PriorityScheduling: React.FC = () => {
     setCurrentTime(0);
     setIsReady(true);
     setIsCompleted(false); // 重置完成状态
+    setProcessQueue([]); // 清空就绪队列
   };
 
   const handleNextStep = () => {
-    const nextSchedule = [...completedProcesses]; //已经完成的进程
-    let nextRemainingProcesses = [...remainingProcesses]; //剩下的进程
-    const nextProcessQueue = [...processQueue]; //就绪队列
-    let nextCurrentTime = currentTime; //当前时间
+    const nextSchedule = [...completedProcesses]; // 已完成的进程
+    let nextRemainingProcesses = [...remainingProcesses]; // 剩下的进程
+    const nextProcessQueue = [...processQueue]; // 就绪队列
+    let nextCurrentTime = currentTime; // 当前时间
 
     // 将到达的进程加入到就绪队列
     nextRemainingProcesses.forEach((process) => {
       if (
         process.arrivalTime <= nextCurrentTime &&
-        !nextProcessQueue.includes(process)
+        !nextProcessQueue.includes(process) &&
+        !completedProcesses.includes(process)
       ) {
         nextProcessQueue.push(process);
-      } //首先是到达时间晚于当前的时间，其次是就绪队列中没有这个进程
+      }
     });
 
     if (nextProcessQueue.length > 0) {
-      // 按优先数排序，选择优先数最高的进程
-      nextProcessQueue.sort((a, b) => b.priority - a.priority);
-      const currentProcess = nextProcessQueue.shift(); // 取出优先数最高的进程
+      // 按顺序选择队列中的进程
+      const currentProcess = nextProcessQueue.shift(); // 取出队首的进程
 
       if (currentProcess) {
-        // 更新进程的完成时间
-        const endTime = nextCurrentTime + currentProcess.burstTime;
-        nextSchedule.push({ ...currentProcess, endTime, remainingTime: 0 });
-        nextCurrentTime = endTime;
+        const timeSlice = Math.min(currentProcess.remainingTime, timeQuantum); // 该进程执行的时间片
+        currentProcess.remainingTime -= timeSlice;
+        nextCurrentTime += timeSlice;
 
-        // 该进程已经完成，移除它
-        nextRemainingProcesses = nextRemainingProcesses.filter(
-          (process) => process.id !== currentProcess.id
-        );
-      } //存在当前的进程
+        // 如果进程完成，更新其完成时间
+        if (currentProcess.remainingTime === 0) {
+          currentProcess.endTime = nextCurrentTime;
+          nextSchedule.push(currentProcess);
+          nextRemainingProcesses = nextRemainingProcesses.filter(
+            (process) => process.id !== currentProcess.id
+          );
+        } else {
+          nextProcessQueue.push(currentProcess); // 未完成的进程放回队列
+        }
+      }
     } else {
       // 如果没有进程可以执行，增加当前时间
       nextCurrentTime++;
@@ -105,8 +116,7 @@ const PriorityScheduling: React.FC = () => {
 
   return (
     <div>
-      <TopBar />
-      <h1>进程调度（静态最高优先数优先）</h1>
+      <h1>进程调度（轮转法）</h1>
       <h2>输入进程信息:</h2>
       <table border={1} cellPadding={10}>
         <thead>
@@ -114,7 +124,6 @@ const PriorityScheduling: React.FC = () => {
             <th>进程ID</th>
             <th>到达时间</th>
             <th>执行时间</th>
-            <th>优先数</th>
           </tr>
         </thead>
         <tbody>
@@ -147,22 +156,15 @@ const PriorityScheduling: React.FC = () => {
                   }
                 />
               </td>
-              <td>
-                <input
-                  type="number"
-                  value={process.priority}
-                  onChange={(e) =>
-                    handleProcessChange(
-                      process.id,
-                      "priority",
-                      Number(e.target.value)
-                    )
-                  }
-                />
-              </td>
             </tr>
           ))}
         </tbody>
+        <div>输入时间片信息默认是2</div>
+        <input
+          type="number"
+          value={timeQuantum}
+          onChange={(e) => setTimeQuantum(Number(e.target.value))}
+        />
       </table>
 
       <br />
@@ -175,7 +177,6 @@ const PriorityScheduling: React.FC = () => {
             <th>进程ID</th>
             <th>到达时间</th>
             <th>执行时间</th>
-            <th>优先数</th>
             <th>完成时间</th>
             <th>剩余时间</th>
           </tr>
@@ -186,9 +187,8 @@ const PriorityScheduling: React.FC = () => {
               <td>{process.id}</td>
               <td>{process.arrivalTime}</td>
               <td>{process.burstTime}</td>
-              <td>{process.priority}</td>
               <td>{process.endTime ?? "进行中"}</td>
-              <td>{process.remainingTime ?? process.burstTime}</td>
+              <td>{process.remainingTime ?? 0}</td>
             </tr>
           ))}
         </tbody>
@@ -202,4 +202,4 @@ const PriorityScheduling: React.FC = () => {
   );
 };
 
-export default PriorityScheduling;
+export default RoundRobinScheduler;
