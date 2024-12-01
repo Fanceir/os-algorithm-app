@@ -8,7 +8,8 @@ interface Process {
   endTime?: number; // 完成时间
   remainingTime?: number; // 线程执行完成还需要多少时间
 }
-
+import { Button } from "@/components/ui/button";
+import { TopBar } from "../TopBar";
 const PriorityScheduling: React.FC = () => {
   // 初始进程数组
   const [processes, setProcesses] = useState<Process[]>([
@@ -97,6 +98,7 @@ const PriorityScheduling: React.FC = () => {
 
   return (
     <div>
+      <TopBar />
       <h1>进程调度（静态最高优先数优先）</h1>
       <h2>输入进程信息:</h2>
       <table border={1} cellPadding={10}>
@@ -157,7 +159,7 @@ const PriorityScheduling: React.FC = () => {
       </table>
 
       <br />
-      <button onClick={handleConfirmChanges}>确定</button>
+      <Button onClick={handleConfirmChanges}>确定</Button>
 
       <h2>调度顺序:</h2>
       <table border={1} cellPadding="10">
@@ -186,9 +188,9 @@ const PriorityScheduling: React.FC = () => {
       </table>
 
       <br />
-      <button onClick={handleNextStep} disabled={!isReady}>
+      <Button onClick={handleNextStep} disabled={!isReady}>
         下一步
-      </button>
+      </Button>
     </div>
   );
 };

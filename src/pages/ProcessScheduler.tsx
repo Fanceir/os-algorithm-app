@@ -1,10 +1,9 @@
 import React from "react";
-import ProcessAnimation from "../components/ProcessAnimation";
+import ProcessAnimation from "../components/algorithm/ProcessAnimation";
 
 const SchedulerPage: React.FC = () => {
   return (
     <div>
-      <h1>进程调度演示</h1>
       <ProcessAnimation />
     </div>
   );
