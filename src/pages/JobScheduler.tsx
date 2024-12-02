@@ -1,3 +1,8 @@
+import JobScheduling from "@/components/algorithm/SingleJobScheduler";
 export default function JobScheduler() {
-  return <div>JobScheduler</div>;
+  return (
+    <div>
+      <JobScheduling />
+    </div>
+  );
 }
