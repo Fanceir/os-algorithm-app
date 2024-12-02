@@ -40,7 +40,7 @@ const FileSystem: React.FC = () => {
         />
       ) : (
         <div className="space-y-6">
-          <Button onClick={() => selectUser(null)}>返回选择用户</Button>
+          <Button onClick={() => selectUser(-1)}>返回选择用户</Button>
           <h2 className="text-2xl font-bold">用户： {currentUser!.username}</h2>
 
           <div className="space-y-2">
