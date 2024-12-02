@@ -82,7 +82,7 @@ const RequestPagingSystem: React.FC = () => {
       // 加入新的页
       setPageTable((prev) => [...prev, { pageNumber, lastAccessedTime: step }]);
     }
-    setPageFaults(pageFaults + 1); // 增加缺页次数
+    setPageFaults((prev) => prev + 1); // 增加缺页次数
   };
 
   // 访问下一个地址
@@ -108,8 +108,8 @@ const RequestPagingSystem: React.FC = () => {
     }
 
     // 更新当前步数
-    setStep(step + 1);
-    setCurrentAddressIndex(currentAddressIndex + 1);
+    setStep((prev) => prev + 1);
+    setCurrentAddressIndex((prev) => prev + 1);
   };
 
   // 渲染页表
