@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -38,27 +37,25 @@ const FileSystem: React.FC = () => {
 
   const [users, setUsers] = useState<User[]>(initialUsers);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
-  const [selectedFileIndex, setSelectedFileIndex] = useState<number | null>(
-    null
-  );
 
-  // 选择用户
   const handleSelectUser = (userId: number) => {
     setCurrentUserId(userId);
-    setSelectedFileIndex(null); // 选择用户时清空已选文件
   };
 
-  // 打开文件
   const handleOpenFile = (fileIndex: number) => {
     if (!currentUserId) return;
-    const user = users[currentUserId - 1];
+    const userIndex = currentUserId - 1;
+    const user = users[userIndex];
     const file = user.files[fileIndex];
 
     if (user.openedFiles.length < 5) {
-      user.openedFiles.push(file);
-      setUsers([...users]);
-    } else {
-      alert("一次运行最多只能打开5个文件");
+      const updatedUser = {
+        ...user,
+        openedFiles: [...user.openedFiles, file],
+      };
+      const updatedUsers = [...users];
+      updatedUsers[userIndex] = updatedUser;
+      setUsers(updatedUsers);
     }
   };
 

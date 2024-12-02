@@ -25,11 +25,9 @@ const FileSystem: React.FC = () => {
   );
 
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
-  const [isReady, setIsReady] = useState(false);
 
   const handleSelectUser = (userId: number) => {
     setCurrentUserId(userId);
-    setIsReady(true);
   };
 
   const handleOpenFile = (fileIndex: number) => {
