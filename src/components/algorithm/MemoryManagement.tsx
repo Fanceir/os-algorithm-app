@@ -9,7 +9,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TopBar } from "../TopBar";
 
 // 页管理相关设置
 const PAGE_SIZE = 1024; // 1 KB 页大小
@@ -124,7 +123,6 @@ const RequestPagingSystem: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4 space-y-8">
-      <TopBar />
       <h1 className="text-3xl font-bold text-center mb-6">
         请求页式存储管理模拟
       </h1>

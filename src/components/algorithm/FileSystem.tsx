@@ -5,7 +5,6 @@ import { useFileSystem } from "@/hooks/useFileSystem";
 import { UserSelection } from "@/components/UserSelection";
 import { FileList } from "@/components/FileList";
 import { OpenedFiles } from "@/components/OpenedFiles";
-import { TopBar } from "@/components/TopBar";
 
 const FileSystem: React.FC = () => {
   const {
@@ -29,7 +28,6 @@ const FileSystem: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4 space-y-8">
-      <TopBar />
       <h1 className="text-3xl font-bold text-center mb-6">文件管理系统</h1>
 
       {!currentUserId ? (
