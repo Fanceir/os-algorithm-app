@@ -1,126 +1,106 @@
 import { useState } from "react";
-import { User, File } from "../types/fileSystem";
 
-export function useFileSystem() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+interface File {
+  id: string;
+  name: string;
+  type: "file" | "directory";
+  content?: string;
+  children?: File[];
+}
 
-  const createUser = (username: string) => {
-    if (users.some((user) => user.username === username)) {
-      throw new Error("User already exists");
-    }
-    const newUser: User = {
-      id: users.length + 1,
-      username,
-      files: [],
-      openedFiles: [],
-    };
-    setUsers([...users, newUser]);
-  };
+export const useFileSystem = () => {
+  const [files, setFiles] = useState<File[]>([
+    {
+      id: "1",
+      name: "home",
+      type: "directory",
+      children: [
+        { id: "2", name: "documents", type: "directory", children: [] },
+        { id: "3", name: "pictures", type: "directory", children: [] },
+        { id: "4", name: "hello.txt", type: "file", content: "Hello, World!" },
+      ],
+    },
+  ]);
 
-  const selectUser = (userId: number) => {
-    setCurrentUserId(userId);
-  };
+  const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
 
-  const getCurrentUser = () => {
-    return currentUserId
-      ? users.find((user) => user.id === currentUserId)
-      : null;
-  };
-
-  const createFile = (fileName: string) => {
-    const user = getCurrentUser();
-    if (!user) throw new Error("No user selected");
-
+  const createFile = (
+    name: string,
+    parentId: string | null,
+    type: "file" | "directory"
+  ) => {
     const newFile: File = {
-      name: fileName,
-      pointer: 0,
-      permissions: { read: true, write: true, execute: false },
-      password: null,
+      id: Date.now().toString(),
+      name,
+      type,
+      children: type === "directory" ? [] : undefined,
+      content: type === "file" ? "" : undefined,
     };
-    user.files.push(newFile);
-    setUsers([...users]);
+
+    setFiles((prevFiles) => {
+      const updatedFiles = [...prevFiles];
+      if (parentId) {
+        const addToParent = (files: File[]): File[] => {
+          return files.map((file) => {
+            if (file.id === parentId) {
+              return { ...file, children: [...(file.children || []), newFile] };
+            }
+            if (file.children) {
+              return { ...file, children: addToParent(file.children) };
+            }
+            return file;
+          });
+        };
+        return addToParent(updatedFiles);
+      }
+      return [...updatedFiles, newFile];
+    });
   };
 
-  const deleteFile = (fileIndex: number) => {
-    const user = getCurrentUser();
-    if (!user) throw new Error("No user selected");
-
-    user.files = user.files.filter((_, index) => index !== fileIndex);
-    setUsers([...users]);
+  const deleteFile = (id: string) => {
+    setFiles((prevFiles) => {
+      const deleteFromArray = (files: File[]): File[] => {
+        return files.filter((file) => {
+          if (file.id === id) {
+            return false;
+          }
+          if (file.children) {
+            file.children = deleteFromArray(file.children);
+          }
+          return true;
+        });
+      };
+      return deleteFromArray(prevFiles);
+    });
   };
 
-  const renameFile = (fileIndex: number, newName: string) => {
-    const user = getCurrentUser();
-    if (!user) throw new Error("No user selected");
-
-    user.files[fileIndex].name = newName;
-    setUsers([...users]);
+  const updateFileContent = (id: string, content: string) => {
+    setFiles((prevFiles) => {
+      const updateContent = (files: File[]): File[] => {
+        return files.map((file) => {
+          if (file.id === id) {
+            return { ...file, content };
+          }
+          if (file.children) {
+            return { ...file, children: updateContent(file.children) };
+          }
+          return file;
+        });
+      };
+      return updateContent(prevFiles);
+    });
   };
 
-  const setFilePassword = (fileIndex: number, password: string) => {
-    const user = getCurrentUser();
-    if (!user) throw new Error("No user selected");
-
-    user.files[fileIndex].password = password;
-    setUsers([...users]);
-  };
-
-  const openFile = (fileIndex: number, password?: string) => {
-    const user = getCurrentUser();
-    if (!user) throw new Error("No user selected");
-
-    const file = user.files[fileIndex];
-    if (file.password && file.password !== password) {
-      throw new Error("Incorrect password");
-    }
-    if (!file.permissions.read) {
-      throw new Error("No read permission");
-    }
-    if (user.openedFiles.length >= 5) {
-      throw new Error("Maximum open files reached");
-    }
-    user.openedFiles.push(file);
-    setUsers([...users]);
-  };
-
-  const closeFile = (fileIndex: number) => {
-    const user = getCurrentUser();
-    if (!user) throw new Error("No user selected");
-
-    user.openedFiles = user.openedFiles.filter(
-      (_, index) => index !== fileIndex
-    );
-    setUsers([...users]);
-  };
-
-  const readWriteFile = (fileIndex: number, password?: string) => {
-    const user = getCurrentUser();
-    if (!user) throw new Error("No user selected");
-
-    const file = user.openedFiles[fileIndex];
-    if (file.password && file.password !== password) {
-      throw new Error("Incorrect password");
-    }
-    if (!file.permissions.write) {
-      throw new Error("No write permission");
-    }
-    file.pointer += 1;
-    setUsers([...users]);
+  const selectFolder = (id: string | null) => {
+    setSelectedFolder(id);
   };
 
   return {
-    users,
-    currentUserId,
-    createUser,
-    selectUser,
-    getCurrentUser,
+    files,
     createFile,
     deleteFile,
-    renameFile,
-    setFilePassword,
-    openFile,
-    closeFile,
-    readWriteFile,
+    updateFileContent,
+    selectedFolder,
+    selectFolder,
   };
-}
+};

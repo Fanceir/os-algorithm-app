@@ -1,81 +1,84 @@
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useFileSystem } from "@/hooks/useFileSystem";
-import { UserSelection } from "@/components/UserSelection";
-import { FileList } from "@/components/FileList";
-import { OpenedFiles } from "@/components/OpenedFiles";
+import { FileTree } from "@/components/FileTree";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
 const FileSystem: React.FC = () => {
   const {
-    users,
-    currentUserId,
-    createUser,
-    selectUser,
-    getCurrentUser,
+    files,
     createFile,
     deleteFile,
-    renameFile,
-    setFilePassword,
-    openFile,
-    closeFile,
-    readWriteFile,
+    updateFileContent,
+    selectedFolder,
+    selectFolder,
   } = useFileSystem();
+  const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [fileContent, setFileContent] = useState("");
 
-  const [newFileName, setNewFileName] = useState("");
+  const handleSelectFile = (id: string) => {
+    const findFile = (files: any[]): any => {
+      for (const file of files) {
+        if (file.id === id) return file;
+        if (file.children) {
+          const found = findFile(file.children);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
 
-  const currentUser = getCurrentUser();
+    const file = findFile(files);
+    if (file && file.type === "file") {
+      setSelectedFile(id);
+      setFileContent(file.content || "");
+    }
+  };
+
+  const handleSaveContent = () => {
+    if (selectedFile) {
+      updateFileContent(selectedFile, fileContent);
+    }
+  };
 
   return (
-    <div className="container mx-auto p-4 space-y-8">
-      <h1 className="text-3xl font-bold text-center mb-6">文件管理系统</h1>
-
-      {!currentUserId ? (
-        <UserSelection
-          users={users}
-          onCreateUser={createUser}
-          onSelectUser={selectUser}
-        />
-      ) : (
-        <div className="space-y-6">
-          <Button onClick={() => selectUser(-1)}>返回选择用户</Button>
-          <h2 className="text-2xl font-bold">用户： {currentUser!.username}</h2>
-
-          <div className="space-y-2">
-            <h3 className="text-xl font-semibold">创建新文件</h3>
-            <div className="flex space-x-2">
-              <Input
-                type="text"
-                value={newFileName}
-                onChange={(e) => setNewFileName(e.target.value)}
-                placeholder="输入文件名"
-              />
-              <Button
-                onClick={() => {
-                  createFile(newFileName);
-                  setNewFileName("");
-                }}
-              >
-                创建文件
-              </Button>
-            </div>
-          </div>
-
-          <FileList
-            files={currentUser!.files}
-            onOpenFile={openFile}
-            onDeleteFile={deleteFile}
-            onRenameFile={renameFile}
-            onSetFilePassword={setFilePassword}
-          />
-
-          <OpenedFiles
-            files={currentUser!.openedFiles}
-            onCloseFile={closeFile}
-            onReadWrite={readWriteFile}
-          />
-        </div>
-      )}
+    <div className="container p-4 mx-auto space-y-8">
+      <h1 className="mb-6 text-3xl font-bold text-center">文件管理系统</h1>
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>文件目录</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <FileTree
+              files={files}
+              onDelete={deleteFile}
+              onCreate={createFile}
+              onSelect={handleSelectFile}
+              selectedFolder={selectedFolder}
+              onSelectFolder={selectFolder}
+            />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>文件内容</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Textarea
+              value={fileContent}
+              onChange={(e) => setFileContent(e.target.value)}
+              placeholder="选择一个文件来查看或编辑内容"
+              rows={10}
+              className="mb-4"
+            />
+            <Button onClick={handleSaveContent} disabled={!selectedFile}>
+              保存内容
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
