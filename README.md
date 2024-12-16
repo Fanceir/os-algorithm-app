@@ -98,16 +98,6 @@
 └── vite.config.ts
 ```
 
-## 贡献指南
-
-1. Fork 本仓库
-2. 创建您的特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交您的更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启一个 Pull Request
-
-请确保您的代码符合项目的编码规范，并附带适当的注释和测试。
-
 ## 致谢
 
 - 特别感谢桑庆兵老师的悉心指导
